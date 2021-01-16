@@ -39,19 +39,19 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 	// score quickly adds up therefore allowing genuine users with 'accidental' score through but cutting out real spam :)
 	$points = (int)0;
 	
-	$badwords = array("adult", "beastial", "bestial", "blowjob", "clit", "cum", "cunilingus", "cunillingus", "cunnilingus", "cunt", "ejaculate", "fag", "felatio", "fellatio", "fuck", "fuk", "fuks", "gangbang", "gangbanged", "gangbangs", "hotsex", "hardcode", "jism", "jiz", "orgasim", "orgasims", "orgasm", "orgasms", "phonesex", "phuk", "phuq", "pussies", "pussy", "spunk", "xxx", "viagra", "phentermine", "tramadol", "adipex", "advai", "alprazolam", "ambien", "ambian", "amoxicillin", "antivert", "blackjack", "backgammon", "texas", "holdem", "poker", "carisoprodol", "ciara", "ciprofloxacin", "debt", "dating", "porn", "link=", "voyeur", "content-type", "bcc:", "cc:", "document.cookie", "onclick", "onload", "javascript");
+	$badwords = array("adult", "beastial", "bestial", "blowjob", "clit", "cum", "cunilingus", "cunillingus", "cunnilingus", "cunt", "ejaculate", "fag", "felatio", "fellatio", "fuck", "fuk", "fuks", "gangbang", "gangbanged", "gangbangs", "hotsex", "hardcode", "jism", "jiz", "orgasim", "orgasims", "orgasm", "orgasms", "phonesex", "phuk", "phuq", "pussies", "pussy", "spunk", "xxx", "viagra", "phentermine", "tramadol", "adipex", "advai", "alprazolam", "ambien", "ambian", "amoxicillin", "antivert", "blackjack", "backgammon", "texas", "holdem", "poker", "carisoprodol", "ciara", "ciprofloxacin", "debt", "dating", "porn", "link=", "voyeur", "content-type", "bcc:", "cc:", "document.cookie", "onclick", "onload", "javascript", "guest", "dick", "seo", "lbs");
 
 	foreach ($badwords as $word)
 		if (
 			strpos(strtolower($_POST['comments']), $word) !== false || 
 			strpos(strtolower($_POST['name']), $word) !== false
 		)
-			$points += 2;
+			$points += 3;
 	
 	if (strpos($_POST['comments'], "http://") !== false || strpos($_POST['comments'], "www.") !== false)
 		$points += 2;
 	if (isset($_POST['nojs']))
-		$points += 1;
+		$points += 5;
 	if (preg_match("/(<.*>)/i", $_POST['comments']))
 		$points += 2;
 	if (strlen($_POST['name']) < 3)
@@ -79,9 +79,9 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 		$error_msg[] = "Invalid website url.\r\n";
 	
 	if ($error_msg == NULL && $points <= $maxPoints) {
-		$subject = "Automatic Form Email";
+		$subject = "Website Feedback";
 		
-		$message = "You received this e-mail message through your website: \n\n";
+		$message = "The following e-mail message was received through your website: \n\n";
 		foreach ($_POST as $key => $val) {
 			if (is_array($val)) {
 				foreach ($val as $subval) {
@@ -97,11 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 		$message .= 'Points: '.$points;
 
 		if (strstr($_SERVER['SERVER_SOFTWARE'], "Win")) {
-			$headers   = "From: $yourEmail\r\n";
+			$headers   = "From: {$_POST['email']}\r\n";
 		} else {
-			$headers   = "From: $yourWebsite <$yourEmail>\r\n";	
+			$headers   = "From: {$_POST['name']} <{$_POST['email']}>\r\n";	
 		}
-		$headers  .= "Reply-To: {$_POST['email']}\r\n";
+		$headers  .= "Reply-To: {$_POST['name']} <{$_POST['email']}>\r\n";
 
 		if (mail($yourEmail,$subject,$message,$headers)) {
 			if (!empty($thanksPage)) {
@@ -124,30 +124,123 @@ function get_data($var) {
 		echo htmlspecialchars($_POST[$var]);
 }
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html lang="en-au">
 <head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<title>My Email Form</title>
-	
-	<style type="text/css">
-		p.error, p.success {
-			font-weight: bold;
-			padding: 10px;
-			border: 1px solid;
+	<title>Contact Form</title>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="HandheldFriendly" content="true">
+	<!--Free PHP Mail Form v2.4.5. Copyright (c) Jem Turner 2007-2017. http://jemsmailform.com/-->
+	<noscript>
+		<style>
+			.nojavascript {
+				border: solid 2px red;
+				border-radius: 6px;
+				display: flex;
+				flex-flow: column;
+				background-color: red;
+				margin: 2em 0 2em 0;
+				font-size: 1em !important;
+			}
+			.nojavascript h3 {
+				margin: 0 15px 0 15px;
+				font-size: 1.3em;
+			}
+			.nojavascript p {
+				margin: 0 15px 0 15px;
+			}
+			#submit {
+				display: none;
+			}
+			#submit-nojs {
+				opacity:0.2;
+				cursor:no-drop;
+			}
+			.contact-sm-icon {
+				max-width: 10vw;
+			}
+		</style>
+	</noscript>
+	<style>
+	* {
+		margin:0;
+		padding:0;
+		box-sizing:border-box; }
+
+	*:before, *:after {
+	  box-sizing: inherit;
+	}
+	html { 
+		font-size:100%;
+		scroll-behavior: smooth;
+		--maxWidth: 1284px;
+	}
+	body {
+		padding: 1%;
+	}
+	form {
+		margin: 0.5em 0 0.5em 0;
+	}
+	.error {
+		border: solid 2px orange;
+		border-radius: 6px;
+		display: flex;
+		flex-flow: column;
+		background-color: orange;
+		margin: 2em 0 2em 0;
+		padding: 0.5em;
+		font-size: 1em !important;
+	}
+	.success {
+		border: solid 2px green;
+		border-radius: 6px;
+		display: flex;
+		flex-flow: column;
+		background-color: green;
+		margin: 2em 0 2em 0;
+		padding: 0.5em;
+		font-size: 1em !important;
+	}
+	.form-grid-container {
+  		display: grid;
+  		grid-template-columns: 35% 65%; 	
+  	}
+  	.form-grid-item {
+	margin: 0.1em;
+	justify-content: center;
+	}
+	.required {
+		color: red;
+		margin: 0 0.2em 0 0.2em;
+	}
+	input, textarea {
+		font-size: 1em;
+		font-family: 'Neuton', serif;
+		padding: 0.2em;
+	}
+	textarea {
+		height: 8em;
+		width: 100%;
+	}
+	input[type="text"] {
+		width: 100%;
+	}
+	input[type="submit"] {
+		width: auto;
+		padding: 0.2em;
+		cursor: pointer;
+	}
+	@media (min-width: 200px) and (max-width: 500px) { 
+		.form-grid-container {
+			grid-template-columns: 100%;
 		}
-		p.error {
-			background: #ffc0c0;
-			color: #900;
-		}
-		p.success {
-			background: #b3ff69;
-			color: #4fa000;
-		}
+	}
 	</style>
 </head>
 <body>
-
+<h1>Contact Form</h1>
 <!--
 	Free PHP Mail Form v2.4.5 - Secure single-page PHP mail form for your website
 	Copyright (c) Jem Turner 2007-2017
@@ -166,44 +259,50 @@ function get_data($var) {
 	To read the GNU General Public License, see http://www.gnu.org/licenses/.
 -->
 
-<?php
-if (!empty($error_msg)) {
+<?php if (!empty($error_msg)) {
 	echo '<p class="error">ERROR: '. implode("<br />", $error_msg) . "</p>";
 }
 if ($result != NULL) {
 	echo '<p class="success">'. $result . "</p>";
-}
-?>
+}?>
 
-
-
-<form action="<?php echo basename(__FILE__); ?>" method="post">
 <noscript>
-		<p><input type="hidden" name="nojs" id="nojs" /></p>
+	<div class="nojavascript">
+		<h3>JavaScript is turned off in your browser!</h3>
+		<p>You will not be able to submit this form until you enable JavaScript. This is an anti-spam measure.</p>
+	</div>
 </noscript>
-<p>
-	<label for="name">Name: *</label> 
-		<input type="text" name="name" id="name" value="<?php get_data("name"); ?>" /><br />
-	
-	<label for="email">E-mail: *</label> 
-		<input type="text" name="email" id="email" value="<?php get_data("email"); ?>" /><br />
-	
-	<label for="url">Website URL:</label> 
-		<input type="text" name="url" id="url" value="<?php get_data("url"); ?>" /><br />
-		
-	<label for="location">Location:</label>
-		<input type="text" name="location" id="location" value="<?php get_data("location"); ?>" /><br />
-	
-	<label for="comments">Comments: *</label>
-		<textarea name="comments" id="comments" rows="5" cols="20"><?php get_data("comments"); ?></textarea><br />
-</p>
-<p>
-	<input type="submit" name="submit" id="submit" value="Send" <?php if (isset($disable) && $disable === true) echo ' disabled="disabled"'; ?> />
-</p>
+
+<form class="form-grid-container" action="<?php echo basename(__FILE__); ?>" method="post" enctype="multipart/form-data">
+	<div class="form-grid-item item-01">
+	<noscript>
+		<input type="hidden" name="nojs" id="nojs" />
+	</noscript>
+	<label for="name">Your name<span class="required">*</span>:</label>
+	</div>
+	<div class="form-grid-item item-02">
+		<input type="text" name="name" id="name" value="<?php get_data("name"); ?>" />
+	</div>
+	<div class="form-grid-item item-03">
+		<label for="email">Your email address<span class="required">*</span>:</label>
+	</div>
+	<div class="form-grid-item item-04"><input type="text" name="email" id="email" value="<?php get_data("email"); ?>" />
+	</div>
+	<div class="form-grid-item item-05">
+		<label for="comments">Your message<span class="required">*</span>:</label>
+	</div>
+	<div class="form-grid-item item-06">
+		<textarea name="comments" id="comments"><?php get_data("comments"); ?></textarea>
+	</div>
+	<div class="form-grid-item item-08">
+		<input type="submit" name="submit" id="submit" value="Send Email">
+		<noscript>
+			<input type="submit" id="submit-nojs" value="Send Email" disabled="disabled">
+		</noscript>
+	</div>
 </form>
 
-<p>Powered by <a href="http://jemsmailform.com/">Jem's PHP Mail Form</a></p>
-
+<p>Powered by <a href="https://jemsmailform.com/">Jem’s PHP Mail Form</a>. Modified by <a href="https://www.adonline.id.au">Adam Dimech</a>.</p>
 
 </body>
 </html>
